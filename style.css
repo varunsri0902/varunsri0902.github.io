@@ -109,17 +109,14 @@ main {
 /* Image rows */
 .gallery {
     display: flex;
-    flex-direction: row;
     flex-flow: row nowrap;
     justify-content: center;
-    align-items: stretch;
-    align-content: center;
     gap: 20px;
 }
 
 .gallery-item {
     display: block;
-    width:80%;
+    flex: 1;
     height:min-content;
     background-color: white;
     color: inherit;
