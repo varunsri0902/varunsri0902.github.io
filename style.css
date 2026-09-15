@@ -97,6 +97,7 @@ main {
 
 .preview-image {
     width: 100%;
+    background-color: #dddddd;
 }
 
 .preview-image img {
