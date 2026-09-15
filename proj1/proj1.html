@@ -12,6 +12,126 @@
     </header>
 
     <main>
+        <section>
+            <h2>Overview</h2>
+            <p> In the early 1900s, no camera could take a color image. From 1905 to 1915, Sergei Mikhailovich Prokudin-Gorskii took pictures 
+                across the Russian empire, surveying the vast empire. The Prokudin-Gorskii Photo Collection is a set of these photos, 
+                with each image being composed of three seperate images captured using a blue, red, or green color filter. Our goal is to reconstruct
+                the original, color image by aligning the filtered images and assigning them to their respective RGB color channel. 
+            </p>
+        </section>
+
+        <section>
+            <h2>Single Scale Alignment</h2>
+            <p>My first approach was focused on the smaller JPG files. These were aligned using the normalized cross-correlation (NCC)
+                score across a ±15 pixel region in both the x- and y- direction. One optimization that was used was a 15% crop (i.e. calculating
+                the score on the inner 85% in x- and y- directions) for calculating the NCC correlation, avoiding the border effects which 
+                are inherent to the np.roll function's output.
+            </p>
+            <div class="gallery">
+                <div class="gallery-item">
+                    <img src="./images/cathedral.jpg" alt="Cathedral" style="width: 100%;">
+                    <p>Cathedral</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/monastery.jpg" alt="Monastery" style="width: 100%;">
+                    <p>Monastery</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/tobolsk.jpg" alt="Tobolsk" style="width: 100%;">
+                    <p>Tobolsk</p>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>Image Pyramid</h2>
+            <p>However, the nested for loop is extremely inefficienct, operating on O(n^2) time complexity. While it was fine for small images,
+                like the .jpg files, for larger .tif files, it would take a very long time. To solve this, we can do a pyramid alignment. The image
+                is rescaled down in multiple steps recursively until a specified minimum size is reached. From this, we can do our window alignment
+                as a nested for loop, and the subproblem's solution is rescaled and used as the origin for the window alignment at the next size ups.
+                The alignment propogates back to the original resolution, refining the alignment at each step while significantly saving on the 
+                necessary computation.
+            </p>
+            <p>The results on the .tif images are shown below, including both the provided images and additions from the Library of Congress. 
+                The only misalignment that occured is with the image of the Emir. Looking at the alignemnt values we can see that the red 
+                channel is shifted much more compared to the green channel. This is a result of the red channel overall 
+                being much darker than the blue channel, and since the NCC correlation expects similar values for each pixel, the alignment fails.
+            </p>
+            <p></p>
+            <!-- row 1 -->
+            <div class="gallery">
+                <div class="gallery-item">
+                    <img src="./images/melons.jpg" alt="melons" style="width: 100%;">
+                    <p>Melons: G: (11, 82); R:  (13, 178)</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/religous_painting.jpg" alt="Religious Painting" style="width: 100%;">
+                    <p>Religious Painting: G: (3, 28); R:  (7, 68)</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/self_portrait.jpg" alt="Self Portrait" style="width: 100%;">
+                    <p>Self Portrait: G: (29, 79); R:  (37, 176)</p>
+                </div>
+            </div>
+
+            <!-- row 2 -->
+            <div class="gallery">
+                <div class="gallery-item">
+                    <img src="./images/Cheremukha.jpg" alt="Cheremukha" style="width: 100%;">
+                    <p>Cheremukha: G: (-94, -30); R:  (-83, 22)</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/bridge.jpg" alt="Bridge" style="width: 100%;">
+                    <p>Bridge: G: (-11, 67); R:  (-28, 118)</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/church.jpg" alt="Church" style="width: 100%;">
+                    <p>Church: G: (4, 25); R:  (-4, 58)</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/column.jpg" alt="Column" style="width: 100%;">
+                    <p>Column: G: (8, 72); R:  (-26, 158)</p>
+                </div>
+            </div>
+
+            <!-- row 3 -->
+             <div class="gallery">
+                <div class="gallery-item">
+                    <img src="./images/siren.jpg" alt="Siren" style="width: 100%;">
+                    <p>Siren: G: (-6, 49); R:  (-25, 96)</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/three_generations.jpg" alt="Three Generations" style="width: 100%;">
+                    <p>Three Generations: G: (14, 53); R:  (11, 112)</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/wharf.jpg" alt="Wharf" style="width: 100%;">
+                    <p>Wharf: G: (-7, 15); R:  (-16, 83)</p>
+                </div>
+            </div>
+
+             <!-- row 4 -->
+            <div class="gallery">
+                <div class="gallery-item">
+                    <img src="./images/emir.jpg" alt="emir" style="width: 100%;">
+                    <p>Emir: G: (24, 49); R:  (-787, 414)</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/harvesters.jpg" alt="harvesters" style="width: 100%;">
+                    <p>Harvesters: G: (17, 60); R:  (13, 124)</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/icon.jpg" alt="Icon" style="width: 100%;">
+                    <p>Icon: G: (17, 41); R:  (23, 89)</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/ilemselga.jpg" alt="Ilemselga" style="width: 100%;">
+                    <p>Ilemselga: G: (7, 40); R:  (11, 130)</p>
+                </div>
+            </div>
+           
+        </section>
 
     </main>
 </body>
