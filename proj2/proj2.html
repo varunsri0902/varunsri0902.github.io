@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>CS180/280A Portfolio - Project 2</title>
+    <link rel="stylesheet" href="./../style.css">
+</head>
+
+<body>
+    <header>
+        <h1>Project 2</h1>
+    </header>
+
+    <main>
+        <section>
+            <h1>Part 1: Fun with Filters</h1>
+            <h2>Part 1.1: Convulations from Scrats</h2>
+
+            <div class="gallery" style="width: 75%">
+                <div class="gallery-item">
+                    <img src="./images/conv/self-grayscale.png" alt="selfie">
+                    <p>Original Image</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/conv/box_filter_convolve2d.png" alt="selfie_blur">
+                    <p>Blurred (Box Filter)</p>
+                </div>
+            </div>
+
+            <div class="gallery" style="width: 75%">
+                <div class="gallery-item">
+                    <img src="./images/conv/dx_convolve2d.png" alt="DX Edges">
+                    <p> Vertical Edge Detector (D_x)</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/conv/dy_convolve2d.png" alt="DY Edges">
+                    <p>Horizontal Edge Detector (D_y)</p>
+                </div>
+            </div>
+
+            <h2>Part 1.2: Finite Difference Operator</h2>
+
+            <div class="gallery" style="width: 60%;">
+                <div class="gallery-item">
+                    <img src="./images/original/cameraman.png" alt="cameraman">
+                    <p>Original Image</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/Finite Difference/grad_mag.png" alt="grad_mag">
+                    <p>Gradient Magnitude</p>
+                </div>
+            </div>
+
+            <div class="gallery" style="width: 60%;">
+                <div class="gallery-item">
+                    <img src="./images/Finite Difference/grad_x.png" alt="DX Edges">
+                    <p> Vertical Edge Detector (D_x)</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/Finite Difference/grad_y.png" alt="DY Edges">
+                    <p>Horizontal Edge Detector (D_y)</p>
+                </div>
+            </div>
+
+            <div class="gallery">
+                <div class="gallery-item">
+                    <img src="./images/Finite Difference/edge_img_0.1.png" alt="selfie" style="width: 100%;">
+                    <p>Threshold = 0.1</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/Finite Difference/edge_img_0.15.png" alt="selfie" style="width: 100%;">
+                    <p>Threshold = 0.15</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/Finite Difference/edge_img_0.2.png" alt="selfie" style="width: 100%;">
+                    <p>Threshold = 0.2</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/Finite Difference/edge_img_0.25.png" alt="selfie" style="width: 100%;">
+                    <p>Threshold = 0.25</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/Finite Difference/edge_img_0.3.png" alt="selfie" style="width: 100%;">
+                    <p>Threshold = 0.3</p>
+                </div>
+            </div>
+
+            <h2>Part 1.3: Derivative of Gaussian (DoG) Filter</h2>
+            TODO
+
+       </section>
+
+       <section>
+        <h1>Part 2: Fun with Frequencies!</h1>
+        
+        <h2>Part 2.1: Image "Sharpening"</h2>
+        Taj
+        <div class="gallery">
+            <div class="gallery-item">
+                <img src="./images/original/taj.jpg" alt="Taj">
+                <p>Original</p>
+            </div>
+            <div class="gallery-item">
+                <img src="./images/sharpened/blur.jpg" alt="blur">
+                <p>Blurred</p>
+            </div>
+            <div class="gallery-item">
+                <img src="./images/sharpened/hf.jpg" alt="HF">
+                <p>High Frequency</p>
+            </div>
+        </div>
+
+        <div class="gallery">
+            <div class="gallery-item">
+                <img src="./images/sharpened/sharp_1.png" alt="alpha-1">
+                <p>Alpha = 1</p>
+            </div>
+            <div class="gallery-item">
+                <img src="./images/sharpened/sharp_2.png" alt="alpha-2">
+                <p>Alpha = 2</p>
+            </div>
+            <div class="gallery-item">
+                <img src="./images/sharpened/sharp_3.png" alt="alpha-3">
+                <p>Alpha = 3</p>
+            </div>
+            <div class="gallery-item">
+                <img src="./images/sharpened/sharp_5.png" alt="alpha-5">
+                <p>Alpha = 5</p>
+            </div>
+            <div class="gallery-item">
+                <img src="./images/sharpened/sharp_10.png" alt="alpha-10">
+                <p>Alpha = 10</p>
+            </div>
+        </div>
+
+
+        Own Image
+        <div class="gallery">
+            <div class="gallery-item">
+                <img src="./images/original/foothill.JPG" alt="Foothill">
+                <p>Original</p>
+            </div>
+            <div class="gallery-item">
+                <img src="./images/sharpened/blurred.png" alt="blur">
+                <p>Blurred</p>
+            </div>
+            <div class="gallery-item">
+                <img src="./images/sharpened/high_frequency.png" alt="HF">
+                <p>High Frequency</p>
+            </div>
+        </div>
+
+        
+        <div class="gallery">
+            <div class="gallery-item">
+                <img src="./images/sharpened/sharp_foothill1.png" alt="alpha-1">
+                <p>Alpha = 1</p>
+            </div>
+            <div class="gallery-item">
+                <img src="./images/sharpened/sharp_foothill2.png" alt="alpha-2">
+                <p>Alpha = 2</p>
+            </div>
+            <div class="gallery-item">
+                <img src="./images/sharpened/sharp_foothill3.png" alt="alpha-3">
+                <p>Alpha = 3</p>
+            </div>
+            <div class="gallery-item">
+                <img src="./images/sharpened/sharp_foothill5.png" alt="alpha-5">
+                <p>Alpha = 5</p>
+            </div>
+            <div class="gallery-item">
+                <img src="./images/sharpened/sharp_foothill10.png" alt="alpha-10">
+                <p>Alpha = 10</p>
+            </div>
+        </div>
+
+        Blur then Sharp
+        <div class="gallery">
+            <div class="gallery-item">
+                <img src="./images/original/foothill.JPG" alt="Foothill">
+                <p>Original</p>
+            </div>
+            <div class="gallery-item">
+                <img src="./images/sharpened/blur_sharp_og.png" alt="blur">
+                <p>Blurred</p>
+            </div>
+        </div>
+
+        <div class="gallery">
+            <div class="gallery-item">
+                <img src="./images/sharpened/blur_sharp_1.png" alt="alpha-1">
+                <p>Alpha = 1</p>
+            </div>
+            <div class="gallery-item">
+                <img src="./images/sharpened/blur_sharp_2.png" alt="alpha-2">
+                <p>Alpha = 2</p>
+            </div>
+            <div class="gallery-item">
+                <img src="./images/sharpened/blur_sharp_3.png" alt="alpha-3">
+                <p>Alpha = 3</p>
+            </div>
+        </div>
+        <div class="gallery" style="width:66%">
+             <div class="gallery-item">
+                <img src="./images/sharpened/blur_sharp_5.png" alt="alpha-5">
+                <p>Alpha = 5</p>
+            </div>
+            <div class="gallery-item">
+                <img src="./images/sharpened/blur_sharp_10.png" alt="alpha-10">
+                <p>Alpha = 10</p>
+            </div>
+        </div>
+
+        <h2>Part 2.2: Hybrid Images</h2>
+        <h2>Part 2.3: Gaussian and Laplacian Stacks</h2>
+        <div class="gallery" style="width: 80%;">
+            <div class="gallery-item">
+                <img src="./images/stacks/fruit_gaussian.png" alt="alpha-10">
+                <p>Gaussian Stacks</p>
+            </div>
+        </div>
+
+        <div class="gallery" style="width: 80%;">
+            <div class="gallery-item">
+                <img src="./images/stacks/fruit_laplacian.png" alt="alpha-10">
+                <p>Laplacian Stacks</p>
+            </div>
+        </div>
+
+        <div class="gallery" style="width: 50%;">
+            <div class="gallery-item">
+                <img src="./images/stacks/oraple_grid.png" alt="alpha-10">
+                <p>Figure 3.42 Recreation</p>
+            </div>
+        </div>
+
+        <h2>Part 2.4: Multiresolution Blending</h2>
+        <div class="gallery">
+            <div class="gallery-item">
+                <img src="./images/original/mountain.jpg" alt="Mountain">
+                <p>Mountain at Night</p>
+            </div>
+            <div class="gallery-item">
+                <img src="./images/original/webb.jpg" alt="James Webb Image">
+                <p>JWST Photo of Space</p>
+            </div>
+            <div class="gallery-item">
+                <img src="./images/stacks/mask.png" alt="Mask">
+                <p>Mask</p>
+            </div>
+        </div>
+
+        <div class="gallery" style="width: 100%;">
+            <div class="gallery-item">
+                <img src="./images/stacks/blend.png" alt="Mountain-JWST Blend">
+                <p>Blend of Images with Custom Mask</p>
+            </div>
+        </div>
+
+        <div class="gallery" style="width: 50%;">
+            <div class="gallery-item">
+                <img src="./images/stacks/night_grid.png" alt="Mountain-JWST Blend">
+                <p>Figure 3.42 Recreation with Custom Filter & Images</p>
+            </div>
+        </div>
+        
+
+       </section>
+
+    </main>
+</body>
+
+</html>
