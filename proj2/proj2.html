@@ -4,6 +4,7 @@
 <head>
     <title>CS180/280A Portfolio - Project 2</title>
     <link rel="stylesheet" href="./../style.css">
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=default'></script>
 </head>
 
 <body>
@@ -14,7 +15,64 @@
     <main>
         <section>
             <h1>Part 1: Fun with Filters</h1>
-            <h2>Part 1.1: Convulations from Scrats</h2>
+            <h2>Part 1.1: Convulations from Scratch</h2>
+
+            The basic process for the convulations are simple. First, we flip the kernel to avoid being cross-correlation. Next, the images are zero-padded
+            to ensure the image size is not changed by the convultion. Finally, the convultion is applied to every pixel on the image.
+            
+            <br><br>
+
+            The first version for convolutions used 4 for loops, two dedicated to scanning across the (padded) image, and another two for scanning
+            across the convulation kernel. This function took 32.0s to run.
+
+            <pre><code class="language-python">
+
+                def convolve_4loops(img, kernel):
+                    kernel = kernel[::-1, ::-1]
+
+                    h, w = kernel.shape
+                    pad_h = (h - 1) // 2
+                    pad_w = (w - 1) // 2
+                    padded = np.pad(img, ((pad_h, pad_h), (pad_w, pad_w)), mode='constant', constant_values=0)
+
+                    img_h, img_w = img.shape
+                    output = np.zeros((img_h, img_w))
+
+                    for x in range (img_w):
+                        for y in range(img_h):
+                            value = 0.0
+                            for u in range(h):
+                                for v in range(w):
+                                    value += padded[y+u, x+v] * kernel[u, v]
+
+                            output[y, x] = value
+                
+                    return output
+            </code></pre>
+
+            To make the function faster, np.sum(...) was used to compute the dot product between the kernel and the window, replacing the 
+            inner two for loops. The run time decreased to 4.8s
+
+            <pre><code class="language-python"></code>
+                def convolve_2loops(img, kernel):
+                    kernel = kernel[::-1, ::-1]
+
+                    h, w = kernel.shape
+                    pad_h = (h - 1) // 2
+                    pad_w = (w - 1) // 2
+                    padded = np.pad(img, ((pad_h, pad_h), (pad_w, pad_w)), mode='constant', constant_values=0)
+
+                    img_h, img_w = img.shape
+                    output = np.zeros((img_h, img_w))
+
+                    for x in range (img_w):
+                        for y in range(img_h):
+                            output[y, x] = np.sum(kernel * padded[y:y+h, x:x+w])
+                    
+                    return output
+            </code></pre>
+
+            Finally, the scipy.signal.convolve2d() was used, and this had a runtime of just 527ms. 
 
             <div class="gallery" style="width: 75%">
                 <div class="gallery-item">
@@ -27,18 +85,27 @@
                 </div>
             </div>
 
+            <br><br>
+            We can design the kernel to extract different details from the image. One such example is shown below, where the \( D_x \) and \( D_y \) kernels
+            are used to find vertical and horizontal edges respectively. (\(D_x\)) finds brightness changes moving from left to right, and (\(D_y\)) finds brightness
+            moving top to bottom. 
+
             <div class="gallery" style="width: 75%">
                 <div class="gallery-item">
                     <img src="./images/conv/dx_convolve2d.png" alt="DX Edges">
-                    <p> Vertical Edge Detector (D_x)</p>
+                    <p> Vertical Edge Detector (\(D_x\))</p>
                 </div>
                 <div class="gallery-item">
                     <img src="./images/conv/dy_convolve2d.png" alt="DY Edges">
-                    <p>Horizontal Edge Detector (D_y)</p>
+                    <p>Horizontal Edge Detector (\(D_y\))</p>
                 </div>
             </div>
 
             <h2>Part 1.2: Finite Difference Operator</h2>
+
+            Using the (\(D_x\)) and (\(D_y\)) kernels, we extract the strength of edges in the vertical and horizotal direction. We can combine this information
+            to obtain a gradient, which marks all edges based on their strength, allowing us to observe edges from all directions.
+            \[ \nabla =  \sqrt{ \left( \frac{\partial I}{\partial x} \right) ^2  + \left( \frac{\partial I}{\partial y} \right) ^2 } \]
 
             <div class="gallery" style="width: 60%;">
                 <div class="gallery-item">
@@ -51,37 +118,33 @@
                 </div>
             </div>
 
-            <div class="gallery" style="width: 60%;">
-                <div class="gallery-item">
-                    <img src="./images/Finite Difference/grad_x.png" alt="DX Edges">
-                    <p> Vertical Edge Detector (D_x)</p>
-                </div>
-                <div class="gallery-item">
-                    <img src="./images/Finite Difference/grad_y.png" alt="DY Edges">
-                    <p>Horizontal Edge Detector (D_y)</p>
-                </div>
-            </div>
+            <br><br>
+            With the gradient magnitude, we can set a minimum threshold for the strength of an edge. Any edge with a magnitude less than the threshold will collapse to black,
+            and edges with a greater magnitude will become white. The results of different thresholds are shown belows. The threshold of 0.3 was chosen as it reduced 
+            most of the noise from the grass while still keeping full, thick edges on other objects
 
-            <div class="gallery">
+            <div class="gallery"  style="width: 100%;">
                 <div class="gallery-item">
-                    <img src="./images/Finite Difference/edge_img_0.1.png" alt="selfie" style="width: 100%;">
+                    <img src="./images/Finite Difference/edge_img_0.1.png" alt="selfie">
                     <p>Threshold = 0.1</p>
                 </div>
                 <div class="gallery-item">
-                    <img src="./images/Finite Difference/edge_img_0.15.png" alt="selfie" style="width: 100%;">
+                    <img src="./images/Finite Difference/edge_img_0.15.png" alt="selfie">
                     <p>Threshold = 0.15</p>
                 </div>
                 <div class="gallery-item">
-                    <img src="./images/Finite Difference/edge_img_0.2.png" alt="selfie" style="width: 100%;">
+                    <img src="./images/Finite Difference/edge_img_0.2.png" alt="selfie">
                     <p>Threshold = 0.2</p>
                 </div>
+            </div>
+            <div class="gallery"  style="width: 66%;">
                 <div class="gallery-item">
-                    <img src="./images/Finite Difference/edge_img_0.25.png" alt="selfie" style="width: 100%;">
+                    <img src="./images/Finite Difference/edge_img_0.25.png" alt="selfie">
                     <p>Threshold = 0.25</p>
                 </div>
                 <div class="gallery-item">
-                    <img src="./images/Finite Difference/edge_img_0.3.png" alt="selfie" style="width: 100%;">
-                    <p>Threshold = 0.3</p>
+                    <img src="./images/Finite Difference/edge_img_0.3.png" alt="selfie">
+                    <p>Threshold = 0.3 (Chosen)</p>
                 </div>
             </div>
 
@@ -94,7 +157,14 @@
         <h1>Part 2: Fun with Frequencies!</h1>
         
         <h2>Part 2.1: Image "Sharpening"</h2>
-        Taj
+        Gaussian blurs are essentially low-pass filters when used on images. Subtracting these low frequencies from the image gives us an image containing only 
+        the high frequency features. Sharpening images addes the high frequency features on top of the existing image to make these features more pronounced. We can
+        change \( \alpha \) to adjust how much sharpening is added based on the image below.
+        
+        \[ I_sharpened = I + \alpha(I - I * G)  \ = I * ((1+ \alpha)e - \alpha G) \]
+
+        <br><br>
+        Using the example picture of the Taj Mahal, we can see the blurred (Low-Pass Filter) image and the High Frequency features below.
         <div class="gallery">
             <div class="gallery-item">
                 <img src="./images/original/taj.jpg" alt="Taj">
@@ -110,6 +180,9 @@
             </div>
         </div>
 
+        The sharpening was applied using this high frequency image across a range of \( \alpha \) values shown below. We can see the high frequency details, like
+        edges, become more defined. 
+
         <div class="gallery">
             <div class="gallery-item">
                 <img src="./images/sharpened/sharp_1.png" alt="alpha-1">
@@ -123,6 +196,9 @@
                 <img src="./images/sharpened/sharp_3.png" alt="alpha-3">
                 <p>Alpha = 3</p>
             </div>
+        </div>
+        
+        <div class="gallery" style="width: 66%;">
             <div class="gallery-item">
                 <img src="./images/sharpened/sharp_5.png" alt="alpha-5">
                 <p>Alpha = 5</p>
@@ -133,8 +209,10 @@
             </div>
         </div>
 
+        <br><br>
+        I also applied this to a photo I took from outside Foothill to see how this affects objects in darker scenes as well. The noise in the sky seems to be
+        more pronounced in these images as compared to the Taj Mahals. Note that the same kernel was used for all of these images
 
-        Own Image
         <div class="gallery">
             <div class="gallery-item">
                 <img src="./images/original/foothill.JPG" alt="Foothill">
@@ -164,6 +242,8 @@
                 <img src="./images/sharpened/sharp_foothill3.png" alt="alpha-3">
                 <p>Alpha = 3</p>
             </div>
+        </div>
+        <div class="gallery" style="width: 66%;">
             <div class="gallery-item">
                 <img src="./images/sharpened/sharp_foothill5.png" alt="alpha-5">
                 <p>Alpha = 5</p>
@@ -174,7 +254,10 @@
             </div>
         </div>
 
-        Blur then Sharp
+        <br><br>
+        Using the same image, I applied the sharpening to the blurry image itself. Looking at the sharpened images, the detail lost in the blur, such as in the 
+        campinille were lost and unrecoverable. However, this did restore the edges to the image, making the objects and skyline more defined compared to the sky.
+
         <div class="gallery">
             <div class="gallery-item">
                 <img src="./images/original/foothill.JPG" alt="Foothill">
@@ -212,29 +295,113 @@
         </div>
 
         <h2>Part 2.2: Hybrid Images</h2>
+        To create a hybrid image, the first step is to align the images together. Using the provided code, the images were resized, rotated, and aligned based on
+        common features. Next, one image was processed with a Gaussian Blur, which acts as a low-pass filter, and the other image had it's blurred copy subtracted, 
+        preserving only the high frequencies. When these images are stacked, we get our hybrid image. When viewed up close, the high-frequencies dominate, 'revealing'
+        the second image. When you view the image from far away, the low frequencies dominate. The image can be altered using two sigma values, which each correspond to 
+        one of the images. Manipulating these values changes how blended the images are
+
+        <br><br>
+
+        My first attempt focused on recreating the hybrid image between Derek and Nutmeg to get some intuition for how the different sigma values affect the final image. 
+        Using the eyes as alignment features, the following images were generated.
+        
+        <div class="gallery">
+            <div class="gallery-item">
+                <img src="./images/hybrid/Derek_aligned.png" alt="derek">
+                <p>Derek (aligned)</p>
+            </div>
+            <div class="gallery-item">
+                <img src="./images/hybrid/nutmeg_aligned.png" alt="nutmeg">
+                <p>Nutmeg (Aligned)</p>
+            </div>
+            <div class="gallery-item">
+                <img src="./images/hybrid/Derek_nutmeg_hybrid.png" alt="hybrid">
+                <p>Blended Result</p>
+            </div>
+        </div>
+
+        <br><br>
+
+        I moved on to creating a custom blend between two images. I chose the Peregrine falcon and the B2 bomber. I always found it interesting how advanced 
+        technology ends up recreating features found in nature (like the similarities between basis filters and our eyes), and I thought that blending the two 
+        would be a great way to demonstrate this. Using the tip and tail as the alignment features, the following images were generated.
+
+        <div class="gallery">
+            <div class="gallery-item">
+                <img src="./images/hybrid/plane_aligned.png" alt="plane">
+                <p>B2 Bomber (aligned)</p>
+            </div>
+            <div class="gallery-item">
+                <img src="./images/hybrid/bird_aligned.png" alt="bird">
+                <p>Peregrine Falcon (Aligned)</p>
+            </div>
+            <div class="gallery-item">
+                <img src="./images/hybrid/plane_bird_hybrid.png" alt="hybrid">
+                <p>Blended Result</p>
+            </div>
+        </div>
+
+        <br><br>
+        Once the blending was complete, I moved on to looking at the frequency space of the images. There were a few interesting features in these images I
+        noticed, such as the borders of the falcon image (a result of rotation for alignment) being visible, or the small black dot in the High Pass Filter FFT that
+        shows the absence of Low Frequency features
+
+        <div class="gallery">
+            <div class="gallery-item">
+                <img src="./images/hybrid/bird_plane_fft.png" alt="fft">
+                <p>FFT of images</p>
+            </div>
+        </div>
+
         <h2>Part 2.3: Gaussian and Laplacian Stacks</h2>
+        A Gaussian stack consists of images blured with a Gaussian blur kernel of increasing sigma values. Level 0 consists of the original image, while Level 1
+        uses the base sigma value (\( \alpha = 2 \)), and each consecutive level doubles the sigma value when applying the Gaussian blur. In the following images,
+        5 levels were used, and the images maintained the same resolution.
+
         <div class="gallery" style="width: 80%;">
             <div class="gallery-item">
-                <img src="./images/stacks/fruit_gaussian.png" alt="alpha-10">
+                <img src="./images/stacks/fruit_gaussian.png" alt="gaussian">
                 <p>Gaussian Stacks</p>
             </div>
         </div>
 
+        <br><br>
+        The Laplacian stack consists of the difference of neighboring images from the Gaussian stack. The last level is the last level of the Gaussian stack, and 
+        each level before is computed using \( L_i = G_i - G_{i+1}\). Note that, for the visualization the difference in images was centered to gray (0.5) 
+        and amplified by a factor of 5 so that they are more visible. 
+
         <div class="gallery" style="width: 80%;">
             <div class="gallery-item">
-                <img src="./images/stacks/fruit_laplacian.png" alt="alpha-10">
+                <img src="./images/stacks/fruit_laplacian.png" alt="laplace">
                 <p>Laplacian Stacks</p>
             </div>
         </div>
 
+        <br><br>
+        The results were arranged similar to Figure 3.42 from the paper, showing Levels 0, 2, 4, and the combination of all Laplacian images. 
+        The mask is the same size as the image, with the right side set to 0 and the left side set to 1. These masks were also blurred along with the images 
+        themselves for a better transition between the two images
+
         <div class="gallery" style="width: 50%;">
             <div class="gallery-item">
-                <img src="./images/stacks/oraple_grid.png" alt="alpha-10">
+                <img src="./images/stacks/oraple_grid.png" alt="grid">
                 <p>Figure 3.42 Recreation</p>
             </div>
         </div>
 
         <h2>Part 2.4: Multiresolution Blending</h2>
+
+        Blending images can be done using the following formula:
+        \[ B = \sum_{i=1}^{N} \left( L_{im1, i} * G_{mask, i} + L_{im2, i} * (1 - G_{mask_i}) \right) \]
+        where N = number of levels used in the Gaussian and Laplacian stacks. The result of the Oraple blend is shown in the previous part.
+
+        <br><br>
+
+        For the custom blend, I found two images: one was a picture of a mountain taken at night, and the other was an image taken by the James Webb Space Telescope.
+        The goal was to replace the night sky with the image from JWST using a custom mask. Using a cv2 polygon, I created a pentagon that formed a rough outline 
+        of the mountain. The basis images are shown below.
+
         <div class="gallery">
             <div class="gallery-item">
                 <img src="./images/original/mountain.jpg" alt="Mountain">
@@ -250,7 +417,13 @@
             </div>
         </div>
 
-        <div class="gallery" style="width: 100%;">
+        <br><br>
+
+        Using this as the mask, I blended the images together and got the image shown below. On the left, the mask cut into the mountain a bit, resulting in there
+        being an overlap of the sky on the mountain, appearing almost as a reflection on it's edge. On the right edge near the top, a bit of the sky from the original
+        image was left unmasked, as the mask did not perfectly outline the mountain. 
+
+        <div class="gallery" style="width: 75%;">
             <div class="gallery-item">
                 <img src="./images/stacks/blend.png" alt="Mountain-JWST Blend">
                 <p>Blend of Images with Custom Mask</p>
@@ -264,6 +437,10 @@
             </div>
         </div>
         
+        <br><br>
+        While blending is a powerful tool, it cannot cover up the innate differences in images, such as color and content. The detail in the mask also can make a 
+        significant difference in the quality of blend, as a straight edge would not be able to blend the JWST capture and the mountain together as well as a custom 
+        mask, and creating a mask that is even more aligned to the mountain's surface would result in a better blend.
 
        </section>
 
