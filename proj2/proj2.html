@@ -101,6 +101,44 @@
                 </div>
             </div>
 
+
+            <br><br>
+
+            The runtime is shown below. Note that there was zero difference between the results of the 3 images. For the box filter, the 2 Loop algorithm
+            is more than 6x faster than the 4 Loop Algorithm. For Dx and Dy, the 4 loop was surprisingly better than the 2 Loop, perhaps due to the number of numpy 
+            calls. Across all 3 kernels, <code>  scipy.solve.convolve2D  </code> was the fastest.
+
+            <table>
+            <thead>
+                <tr>
+                <th>Algorithm</th>
+                <th>Box Filter</th>
+                <th>D<sub>x</sub></th>
+                <th>D<sub>y</sub></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                <td>4 Loop</td>
+                <td>32.0s</td>
+                <td>1.3s</td>
+                <td>1.5s</td>
+                </tr>
+                <tr>
+                <td>2 Loop</td>
+                <td>4.8s</td>
+                <td>2.9s</td>
+                <td>3.0s</td>
+                </tr>
+                <tr>
+                <td>convolve2d</td>
+                <td>0.527s</td>
+                <td>0.337s</td>
+                <td>0.300s</td>
+                </tr>
+            </tbody>
+            </table>
+
             <h2>Part 1.2: Finite Difference Operator</h2>
 
             Using the (\(D_x\)) and (\(D_y\)) kernels, we extract the strength of edges in the vertical and horizotal direction. We can combine this information
@@ -149,7 +187,59 @@
             </div>
 
             <h2>Part 1.3: Derivative of Gaussian (DoG) Filter</h2>
-            TODO
+            The Gaussian kernel chosen was size=15 and sigma=2.0. Using this 1D Gaussian kernel, I calculated it's outer product with it's transpose to get 
+            a 2D Gaussian kernel. This kernel was used to blur the image, and the edge_detection function was executed on this blurred image using the Dx and Dy kernels.
+            Thanks to the initial blur, most of the noise was reduced, and transitions are more smooth on edges, resulting in thicker outlines for edges & objects.
+
+            <div class="gallery"  style="width: 100%">
+                <div class="gallery-item">
+                    <img src="./images/DoG1/blur.png" alt="camera blur" style="width: 100%">
+                    <p>Gaussian Blur</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/DoG1/grad_mag.png" alt="grad mag" style="width: 100%">
+                    <p>Gradient magnitude</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/DoG1/edge_img_0.06.png" alt="threshold" style="width: 100%">
+                    <p>Threshold = 0.06</p>
+                </div>
+            </div>
+
+            <br><br>
+
+            Since convolutions are associatative, we can convolve the Gaussian blur with the D_x and D_y kernels, as shown below.
+
+             <div class="gallery"  style="width: 50%;">
+                <div class="gallery-item">
+                    <img src="./images/DoG2/dogx.png" alt="dogx" style="width: 100%;">
+                    <p>DoG_X Filter</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/DoG2/dogy.png" alt="dogy" style="width: 100%;">
+                    <p>DoG_Y Filter</p>
+                </div>
+            </div>
+
+            <br><br>
+
+            Using these as our convolutions, we achieve the same results with less computation, as the kernels are convolved with each other and then only one
+            kernel is convolved with the image, rather than 2 kernels being convolved with the image separately.
+
+            <div class="gallery"  style="width: 100%;">
+                <div class="gallery-item">
+                    <img src="./images/DoG2/blur.png" alt="camera blur">
+                    <p>Gaussian Blur</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/DoG2/grad_mag.png" alt="grad mag">
+                    <p>Gradient magnitude</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/DoG2/edge_img_0.06.png" alt="threshold">
+                    <p>Threshold = 0.06</p>
+                </div>
+            </div>
 
        </section>
 
@@ -163,19 +253,19 @@
         
         \[ I_sharpened = I + \alpha(I - I * G)  \ = I * ((1+ \alpha)e - \alpha G) \]
 
-        <br><br>
         Using the example picture of the Taj Mahal, we can see the blurred (Low-Pass Filter) image and the High Frequency features below.
+        
         <div class="gallery">
             <div class="gallery-item">
                 <img src="./images/original/taj.jpg" alt="Taj">
                 <p>Original</p>
             </div>
             <div class="gallery-item">
-                <img src="./images/sharpened/blur.jpg" alt="blur">
+                <img src="./images/sharpened/blurred copy 2.png" alt="blur">
                 <p>Blurred</p>
             </div>
             <div class="gallery-item">
-                <img src="./images/sharpened/hf.jpg" alt="HF">
+                <img src="./images/sharpened/high_frequency copy.png" alt="HF">
                 <p>High Frequency</p>
             </div>
         </div>
