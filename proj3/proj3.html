@@ -352,8 +352,82 @@
                     <p>Distant: "a photo of flowers""a photo of a bird"</p>
                 </div>
             </div>
+        </section>
 
+        <section>
+            <h1>Part B: Flow Matching from Scratch!</h1>
+            <h2>1. Training a Single-Step Denoising UNet</h2>
+            <div class="gallery" style="width: 75%;">
+                <div class="gallery-item">
+                    <img src="./images/noising_process.png" alt="noising inputs">
+                </div>
+            </div>
+            <h3>1.1 Implementing the UNet</h3>
 
+            TODO
+
+            <h3>1.2 Using the UNet to Train a Denoiser</h3>
+            <h3>1.2.1 Training</h3>
+            TODO
+
+            <div class="gallery" style="width: 100%;">
+                <div class="gallery-item">
+                    <img src="./images/denoise_epoch_1.png" alt="epoch 1">
+                    <p>Epoch 1</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/denoise_epoch_5.png" alt="epoch 5">
+                    <p>Epoch 5</p>
+                </div>
+            </div>
+
+            <div class="gallery" style="width: 60%;">
+                <div class="gallery-item">
+                    <img src="./images/denoise_loss.png" alt="noising inputs">
+                    <p>Training Loss</p>
+                </div>
+            </div>
+
+            <h3>1.2.2 Out-of-Distribution Testing</h3>
+
+            TODO
+
+            <div class="gallery" style="width: 60%;">
+                <div class="gallery-item">
+                    <img src="./images/ood_grid_by_noise_level.png" alt="noising inputs">
+                </div>
+            </div>
+
+            <h3>1.2.3 Denoising Pure Noise</h3>
+
+            TODO
+
+            <div class="gallery" style="width: 100%;">
+                <div class="gallery-item">
+                    <img src="./images/pure_noise_epoch_1.png" alt="epoch 1">
+                    <p>Epoch 1</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/pure_noise_epoch_5.png" alt="epoch 5">
+                    <p>Epoch 5</p>
+                </div>
+            </div>
+
+            <div class="gallery" style="width: 60%;">
+                <div class="gallery-item">
+                    <img src="./images/pure_noise_denoise_loss.png" alt="noising inputs">
+                    <p>Training Loss</p>
+                </div>
+            </div>
+
+            <h2>2. Training a Flow Matching Model</h2>
+
+            <h3>2.1 Adding Time Conditioning to UNet</h3>
+            <h3>2.2 Training the UNet</h3>
+            <h3>2.3 Sampling from the UNet</h3>
+            <h3>2.4 Adding Class-Conditioning to UNet</h3>
+            <h3>2.5 Training the UNet</h3>
+            <h3>2.6 Sampling from the UNet</h3>
 
         </section>
 
