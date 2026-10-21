@@ -191,43 +191,81 @@
             <h2>3. Creative Applications</h2>
             <h3>3.1 Image-to-Image Editing</h3>
 
-            TODO
+            To edit an image, we add some noise to the image until we reach a start time \(t_start \). From this, we use 
+            Euler sampling to return back to \(t = 1 \). As the value of \( t_start \) decreases, the more information is 
+            'lost' from the image, meaning the final result will be more significant changes as compared to a greater value 
+            of \(t\).
+
+            <pre><code>
+                def edit(image, noise, t_start, condition, predict_velocity, w=7, step_size=0.02):
+                    x_start = interpolate(image, noise, t_start)
+                    velocity_fn = lambda x, t: cfg_velocity(x, t, condition, w, predict_velocity)
+                    final_image, trajectory = euler_sample(x_start, t_start, step_size, velocity_fn)
+                    return final_image
+            </code></pre>
 
             <div class="gallery" style="width: 75%;">
                 <div class="gallery-item">
                     <img src="./images/edit_campanile.png" alt="blur 25">
                 </div>
             </div>
+
+            From t = 0.02, the only thing from the original image that remains is the general shape of the tower, and the 
+            color assignments (vertical white blob in the middle, blue background). At t = 0.10, we return to roughly 
+            the original image, but a true reconstruction isn't reached until t = 0.25.
+
             <div class="gallery" style="width: 75%;">
                 <div class="gallery-item">
                     <img src="./images/edit_my_image_1.png" alt="blur 50">
                 </div>
             </div>
+
+            At t = 0.02, the image is pretty much lost, and we start to see the model's preference for human features. It isn't
+            until t = 0.25 that we get an image similar to the original. 
+
             <div class="gallery" style="width: 75%;">
                 <div class="gallery-item">
                     <img src="./images/edit_my_image_2.png" alt="blur 75">
                 </div>
             </div>
 
+            At t = 0.02, we see again the model's prefernce for human features (a torso and arm?). This time, we get a car at 
+            t = 0.06, reconstructing the image much earlier than the other images. However, compared to the original, the car itself
+            is distoreted, though this is mostly resolved at t = 0.10, and fully resolved by t = 0.25.
+
+            <h3>Editing Hand-Drawn and Web Images</h3>
+
             <div class="gallery" style="width: 75%;">
                 <div class="gallery-item">
                     <img src="./images/edit_web_image.png" alt="blur 75">
                 </div>
             </div>
+
+            At t = 0.02, little of the original image is left. At t = 0.06, the landscape returns, and at t = 0.10, the trees
+            come back as well. Later time values simply add more detail.
+
             <div class="gallery" style="width: 75%;">
                 <div class="gallery-item">
                     <img src="./images/edit_drawing_1.png" alt="blur 75">
                 </div>
             </div>
+
+            At t = 0.02, the model prefers to reach towards a human face. A bird returns at t = 0.06, and at t = 0.14, 
+            we get a different styled drawing of the original image
+
             <div class="gallery" style="width: 75%;">
                 <div class="gallery-item">
                     <img src="./images/edit_drawing_2.png" alt="blur 75">
                 </div>
             </div>
 
+            For t = 0.02, 0.04, and 0.06, we see the model's preference to get a high resolution image of a person's face.
+            Starting at t = 0.10, the image is mostly returned.
+
             <h3>3.2 Text-Guided Image Editing</h3>
 
-            TODO
+            We can also use custom text prompts to guide the editing, and use different values of \( t_start \) to achieve greater
+            degrees of editing
 
             <div class="gallery" style="width: 75%;">
                 <div class="gallery-item">
@@ -246,8 +284,20 @@
             </div>
 
             <h3>3.3 Visual Anagrams</h3>
+            Using iterative Euler sampling, we can generate visual anagrams using a simple algorithm. The update for the first
+            prompt is calculated normally as \( v_1 = CFG(x_t, t, c_a) \). The update the the second prompt is applied to 
+            the image after it has been rotated 180 degrees, and is then rotated back. Mathematically, this is 
+            \( v_2 = flip( CFG(flip(x_t), t, c_b) ) \). Finally, these are averaged then applied as a step. 
 
-            TODO
+            <pre><code>
+                def visual_anagrams(noise, condition_a, condition_b, predict_velocity, w=7, step_size=0.02):
+                    velocity_fn = lambda x,t: (cfg_velocity(x, t, condition_a, w, predict_velocity) 
+                                        + rotate180(cfg_velocity(rotate180(x), t, condition_b, w, predict_velocity))) / 2
+                    t_start = 0.0
+
+                    final_image, _ = euler_sample(noise, t_start, step_size, velocity_fn)
+                    return final_image
+            </code></pre>
 
             <div class="gallery" style="width: 75%;">
                 <div class="gallery-item">
@@ -262,22 +312,44 @@
 
             <h3>3.4 Hybrid Images</h3>
 
-            TODO
+            To make hybrid images, we can either combine existing images, as we did in Project 2, or generate them
+            by combining update velocities. Given two prompts, \( c_a \) and \(c_b\), we can generate two update
+            velocities, \( v_1 = CFG(x_t, t, c_a) \) and \( v_2 = CFG(x_t, t, c_b) \). We can combine them into a final
+            update using \(v = lowpass(v_1) + highpass(v_2)\)
+
+            <pre><code>
+                def make_hybrids(noise, condition_a, condition_b, predict_velocity, w=7, step_size=0.02):
+                    def velocity_fn(x, t):
+                        v1 = lowpass(cfg_velocity(x, t, condition_a, w, predict_velocity))
+                        v_b = cfg_velocity(x, t, condition_b, w, predict_velocity)
+                        v2 = v_b - lowpass(v_b)
+
+                        return v1 + v2
+                
+                    t_start = 0.0
+
+                    final_image, _ = euler_sample(noise, t_start, step_size, velocity_fn)
+                    return final_image
+            </code></pre>
 
             <div class="gallery" style="width: 75%;">
                 <div class="gallery-item">
                     <img src="./images/hybrid_0.png" alt="blur 75">
+                    <p>Close: "a lithograph of a city"</p>
                 </div>
                 <div class="gallery-item">
                     <img src="./images/hybrid_0.png" alt="blur 75" style="width: 10%;">
+                    <p>Distant: "a lithograph of a rabbit"</p>
                 </div>
             </div>
             <div class="gallery" style="width: 75%;">
                 <div class="gallery-item">
                     <img src="./images/hybrid_1.png" alt="blur 75">
+                    <p>Close: "a photo of flowers"</p>
                 </div>
                 <div class="gallery-item">
                     <img src="./images/hybrid_1.png" alt="blur 75" style="width: 10%;">
+                    <p>Distant: "a photo of flowers""a photo of a bird"</p>
                 </div>
             </div>
 
