@@ -18,7 +18,9 @@
             <h2>1. Visualizing Training and Sampling</h2>
             <h3>1.1 Constructing Noisy Training Inputs</h3>
 
-            TODO
+            The first step is to create our training inputs by interpolating between a noisy image and the final image at 
+            different times using the equation:
+            \[ x_t = t \times x_1 + (1 - t) \times \epsilon \]
 
             <pre><code class="language-python">
                 def interpolate(image, noise, t):
@@ -33,7 +35,9 @@
 
             <h3>1.2 Classical Denoising</h3>
 
-            TODO 
+            A naive approach to denoising is to simply divide the image by it's t value. to extract \( x_1 \). However, 
+            this would give us \( \frac{x_t}{t} = x_1 + \frac{(1-t)}{t} \epsilon \), drastically amplifying the noise.
+            To help mitigate this, we can apply a low-pass filter using a Gaussian blur. The results are shown below
 
             <div class="gallery" style="width: 50%;">
                 <div class="gallery-item">
@@ -51,61 +55,109 @@
                 </div>
             </div>
 
+            <br>
+            These images show that this approach is ineffective, especially when starting from low t values. 
+
             <h3>1.3 One-Step Denoising</h3>
 
-            TODO 
+            A better approach is to use flow matching. We can use the provided <code>predict_velocity(x,t,condition)</code>
+            function to implement a one-step image update:
+            \[ x&#770_1 = x_t + (1 - t) \times v_{\theta}(x_t, t, c) \]
 
-             <div class="gallery" style="width: 75%;">
+            <pre><code>
+                def one_step_denoise(x, t, condition, predict_velocity):
+                    return x + (1-t) * predict_velocity(x, t, condition)
+            </code></pre>
+
+            As seen in the examples below, these produce much better results compared to the naive approach used previously.
+            However, there is still some detail missing, which is more obvious when starting from lower t values.
+
+            <div class="gallery" style="width: 75%;">
                 <div class="gallery-item">
-                    <img src="./images/one_step_0.25.png" alt="blur 25">
+                    <img src="./images/one_step_0.25.png" alt="step 25">
+                    <p>t_start = 0.25</p>
                 </div>
             </div>
             <div class="gallery" style="width: 75%;">
                 <div class="gallery-item">
-                    <img src="./images/one_step_0.5.png" alt="blur 50">
+                    <img src="./images/one_step_0.5.png" alt="step 50">
+                        <p>t_start = 0.50</p>
                 </div>
             </div>
             <div class="gallery" style="width: 75%;">
                 <div class="gallery-item">
-                    <img src="./images/one_step_0.75.png" alt="blur 75">
+                    <img src="./images/one_step_0.75.png" alt="step 75">
+                    <p>t_start = 0.75</p>
                 </div>
             </div>
             
             <h3>1.4 Visualizing Velocity</h3>
 
-            TODO 
+            We can compare the predicted images to the actual image to get an idea of how this approach lacks. Based on the 
+            error graphs, we can see that as t increases, the error drops. Additionally, the error tends to exist at high
+            frequency regions of the images (i.e. edges).
 
-            <div class="gallery" style="width: 75%;">
+            <div class="gallery" style="width: 25%;">
                 <div class="gallery-item">
-                    <img src="./images/velocity_0.25.png" alt="blur 25">
+                    <img src="./images/velocity_original.png" alt="og">
+                    <p>Original Image</p>
                 </div>
             </div>
             <div class="gallery" style="width: 75%;">
                 <div class="gallery-item">
-                    <img src="./images/velocity_0.50.png" alt="blur 50">
+                    <img src="./images/velocity_0.25.png" alt="velocity 25">
                 </div>
             </div>
             <div class="gallery" style="width: 75%;">
                 <div class="gallery-item">
-                    <img src="./images/velocity_0.75.png" alt="blur 75">
+                    <img src="./images/velocity_0.50.png" alt="velocity 50">
+                </div>
+            </div>
+            <div class="gallery" style="width: 75%;">
+                <div class="gallery-item">
+                    <img src="./images/velocity_0.75.png" alt="velocity 75">
                 </div>
             </div>
 
             <h3>1.5 Iterative Denoising with Euler Sampling</h3>
 
-            TODO 
+            Rather than taking one large step, we can take multiple smaller steps to reduce the error. 
+
+            <pre><code>
+                def euler_sample(x_start, t_start, step_size, velocity):
+                    x = x_start.detach()
+                    t = t_start
+                    trajectory = [(t, x)]
+                    
+                    while t < 1.0:
+                        dt = min(step_size, 1.0 - t)        
+                        x = (x + dt * velocity(x, t)).detach()
+                        t = t + dt
+                        
+                        trajectory.append((t, x))
+                        
+                    return x, trajectory
+            </code></pre>
 
             <div class="gallery" style="width: 75%;">
                 <div class="gallery-item">
-                    <img src="./images/trajectory_5th.png" alt="cameraman">
+                    <img src="./images/trajectory_5th.png" alt="trajectory">
                 </div>
             </div>
 
-            TODO: Compare the final result with your original image, one-step denoising (Section 1.3), and Gaussian blur (Section 1.2), using the same noisy input.
+            Looking at the final results of all of these approaches, it's evident that an iterative approach is the best 
+            method for flow matching
+
+            <div class="gallery" style="width: 75%;">
+                <div class="gallery-item">
+                    <img src="./images/comparison.png" alt="trajectory">
+                </div>
+            </div>
 
             <h3>1.6 Generating Images from Noise</h3>
 
-            TODO 
+            By setting t_start = 0 and x_start to some random noise, we can use this flow model to generate images.
+            Below are some images generated from the flow model, with the only conditional being "a high quality photo".
 
             <div class="gallery" style="width: 70%;">
                 <div class="gallery-item">
@@ -116,8 +168,20 @@
             <h2>2. Conditional Generation and Guidance</h2>
             <h3>2.1 Classifier-Free Guidance (CFG)</h3>
 
-            TODO
+            To improve the generated images as compared to 1.6, we can use CFG, which uses the difference between the conditional 
+            and null-conditional update steps to better align the image output to the prompt. The formula for this is:
+            \[ v_{cfg} = v_c + w(v_c - v_u) \],
 
+            where \( v_c \) is the conditional velocity, \( v_u \) is the null conditional velocity, and \(w\) is some weight.  
+
+            <pre><code>
+                def cfg_velocity(x, t, condition, w, predict_velocity, null_condition=''):
+                    v_c = predict_velocity(x, t, condition)
+                    v_u = predict_velocity(x, t, null_condition)
+                    return v_c + w * (v_c - v_u)
+            </code></pre>
+
+            As seen below, the quality of the output increases significantly, but the variety of output shrinks
             <div class="gallery" style="width: 70%;">
                 <div class="gallery-item">
                     <img src="./images/cfg_samples.png" alt="cameraman">
