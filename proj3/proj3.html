@@ -569,8 +569,77 @@
             </div>
         
             <h3>2.4 Adding Class-Conditioning to UNet</h3>
+
+            Adding class conditioning to the UNet required adding FCBlocks for the classes to influence the layers as well, similar to how 
+            time conditioning was added.
+
+            <pre><code>
+                self.fc1_c = FCBlock(num_classes, 2 * D)
+                self.fc2_c = FCBlock(num_classes, D)
+
+                # In forward
+                x_flat = self.flatten(x_down2)
+
+                unflat = self.unflatten(x_flat) * c1 + t1
+                x_up0 = torch.cat((x_down2, unflat), dim=1)
+
+                up1 = self.up1(x_up0) * c2 + t2
+                x_up1 = torch.cat((x_down1, up1), dim=1)
+            </code></pre>
+
             <h3>2.5 Training the UNet</h3>
+
+            A side by side comparison is shown of the different training curves between a scheduled learning rate and a constant learning rate. To switch
+            to a constant learning rate, I used a smaller value, \(10^{-3} \), instead of the previous \(10^{-2} \).
+
+            <div class="gallery" style="width: 100%;">
+                <div class="gallery-item">
+                    <img src="./images/class_fm_scheduled_loss.png" alt="noising inputs">
+                    <p>Training Loss - Scheduled Learning Rate</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/class_fm_constant_lr_loss.png" alt="noising inputs">
+                    <p>Training Loss - Constant Learning Rate</p>
+                </div>
+            </div>
+
             <h3>2.6 Sampling from the UNet</h3>
+
+            The results at each epoch are shown below using the different learning rate strategies. The constant learning rate produces adequate
+            results by epoch 5 compared to the scheduled learning rate, showing that it is very much possible to remove the scheduler.
+
+            <div class="gallery" style="width: 100%;">
+                <div class="gallery-item">
+                    <img src="./images/class_fm_scheduled_samples_epoch_1.png" alt="noising inputs">
+                    <p>Training Loss - Scheduled Learning Rate</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/class_fm_constant_lr_samples_epoch_1.png" alt="noising inputs">
+                    <p>Training Loss - Constant Learning Rate</p>
+                </div>
+            </div>
+
+            <div class="gallery" style="width: 100%;">
+                <div class="gallery-item">
+                    <img src="./images/class_fm_scheduled_samples_epoch_5.png" alt="noising inputs">
+                    <p>Training Loss - Scheduled Learning Rate</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/class_fm_constant_lr_samples_epoch_5.png" alt="noising inputs">
+                    <p>Training Loss - Constant Learning Rate</p>
+                </div>
+            </div>
+
+            <div class="gallery" style="width: 100%;">
+                <div class="gallery-item">
+                    <img src="./images/class_fm_scheduled_samples_epoch_10.png" alt="noising inputs">
+                    <p>Training Loss - Scheduled Learning Rate</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/class_fm_constant_lr_samples_epoch_10.png" alt="noising inputs">
+                    <p>Training Loss - Constant Learning Rate</p>
+                </div>
+            </div>
 
         </section>
 
