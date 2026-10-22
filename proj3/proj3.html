@@ -357,18 +357,99 @@
         <section>
             <h1>Part B: Flow Matching from Scratch!</h1>
             <h2>1. Training a Single-Step Denoising UNet</h2>
+            <h3>1.1 Implementing the UNet</h3>
+
+                        <table>
+            <thead>
+                <tr>
+                <th>Stage</th>
+                <th>Purpose</th>
+                <th>Shape</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Input</td>
+                    <td>Image to be Denoised</td>
+                    <td>(in_channels, 28, 28)</td>
+                </tr>
+                <tr>
+                    <td>Initial Convolution</td>
+                    <td>ConvBlock</td>
+                    <td>(D, 28, 28)</td>
+                </tr>
+                <tr>
+                    <td>Down 1 (skip_1)</td>
+                    <td>DownBlock</td>
+                    <td>(D, 14, 14)</td>
+                </tr>
+                <tr>
+                    <td>Down 2 (skip_2)</td>
+                    <td>DownBlock</td>
+                    <td>(2D, 7, 7)</td>
+                </tr>
+                <tr>
+                    <td>Flatten</td>
+                    <td>AvgPool(7) </td>
+                    <td>(2D, 1, 1)</td>
+                </tr>
+                <tr>
+                    <td>Middle Convolution</td>
+                    <td>ConvBlock</td>
+                    <td>(2D, 1, 1)</td>
+                </tr>
+                <tr>
+                    <td>Unflatten</td>
+                    <td>Unflatten</td>
+                    <td>(2D, 7, 7)</td>
+                </tr>
+                <tr>
+                    <td>Up 1</td>
+                    <td>UpBlock</td>
+                    <td>(D, 14, 14)</td>
+                </tr>
+                <tr>
+                    <td>Concatenate with Skip 2</td>
+                    <td> - </td>
+                    <td>(2D, 14, 14)</td>
+                </tr>
+                <tr>
+                    <td>Up 2</td>
+                    <td>UpBlock</td>
+                    <td>(D, 28, 28)</td>
+                </tr>
+                <tr>
+                    <td>Concatenate with Skip 1</td>
+                    <td> - </td>
+                    <td>(2D, 14, 14)</td>
+                </tr>
+                <tr>
+                    <td>Final Convolution</td>
+                    <td>ConvBlock</td>
+                    <td>(D, 28, 28)</td>
+                </tr>
+                <tr>
+                    <td>Out Convolution</td>
+                    <td>Conv</td>
+                    <td>(in_channels, 28, 28)</td>
+                </tr>
+            </tbody>
+            </table>
+
+            <h3>1.2 Using the UNet to Train a Denoiser</h3>
+
+            The images below demonstrate the inputs for the training across 10 MNIST samples. Noise is added at varying degrees
+            \( \sigma = [0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0] \), which each correspond to a row. Up to \( \sigma = 0.6 \), the 
+            digits can be mostly discerned, after which it depends on the image and seed.
+
             <div class="gallery" style="width: 75%;">
                 <div class="gallery-item">
                     <img src="./images/noising_process.png" alt="noising inputs">
                 </div>
             </div>
-            <h3>1.1 Implementing the UNet</h3>
-
-            TODO
-
-            <h3>1.2 Using the UNet to Train a Denoiser</h3>
             <h3>1.2.1 Training</h3>
-            TODO
+            The results of the training are shown below. After the first epoch, samples of \( \sigma = 0.5 \) are able to be 
+            denoised, with some added blur. After 5 epochs, the images are sharper and the digits are easily discernable. 
 
             <div class="gallery" style="width: 100%;">
                 <div class="gallery-item">
@@ -381,6 +462,9 @@
                 </div>
             </div>
 
+            We can see in the training loss that there is a big improvement in epoch 1, after which the model steadily improves
+            sharpness.
+
             <div class="gallery" style="width: 60%;">
                 <div class="gallery-item">
                     <img src="./images/denoise_loss.png" alt="noising inputs">
@@ -390,7 +474,10 @@
 
             <h3>1.2.2 Out-of-Distribution Testing</h3>
 
-            TODO
+            For images with a \( \sigma \) value outside of the range, the model performs decently. For images with 
+            \( \sigma < 0.5 \), the model works perfectly. For noisier images, some of the noise remains, and this becomes
+            very evident in the \( \sigma = 0.8 \) images, as the model cannot completely eliminate the noise. For \( \sigma = 1.0 \),
+            the result is random, but ultimately the outputs show the model cannot adequately denoise the image
 
             <div class="gallery" style="width: 60%;">
                 <div class="gallery-item">
@@ -400,7 +487,10 @@
 
             <h3>1.2.3 Denoising Pure Noise</h3>
 
-            TODO
+            When denoising pure nosie, the model seems to approach a common, 'average' digit. All outputs are virtually 
+            identical, which makes sense as we are using MSE loss. From pure noise, the model does not know which digit
+            is the desired result. Therefore, to minimize the loss, it takes an averaged version of the digits in order to 
+            best optimize for minimal loss across all digit labels. 
 
             <div class="gallery" style="width: 100%;">
                 <div class="gallery-item">
@@ -421,10 +511,63 @@
             </div>
 
             <h2>2. Training a Flow Matching Model</h2>
-
             <h3>2.1 Adding Time Conditioning to UNet</h3>
+
+            We can add the time \( t \) to help the model, since the velocity depends on the current time value. This is done using FCBlocks
+            as shown below
+
+            <pre><code>
+                class FCBlock(nn.Module):
+                    def __init__(self, in_features: int, out_features: int):
+                        super().__init__()
+                        self.net = nn.Sequential(
+                            nn.Linear(in_features, out_features),
+                            nn.GELU(),
+                            nn.Linear(out_features, out_features),
+                        )
+
+                    def forward(self, x: torch.Tensor) -> torch.Tensor:
+                        return self.net(x)
+                
+                # In forward
+                x_flat = self.flatten(x_down2)
+                        
+                unflat = self.unflatten(x_flat) * t1
+                x_up0 = torch.cat((x_down2, unflat), dim=1)
+
+                up1 = self.up1(x_up0) * t2
+                x_up1 = torch.cat((x_down1, up1), dim=1)
+            </code></pre>
             <h3>2.2 Training the UNet</h3>
+
+            <div class="gallery" style="width: 60%;">
+                <div class="gallery-item">
+                    <img src="./images/time_loss.png" alt="noising inputs">
+                    <p>Training Loss</p>
+                </div>
+            </div>
+
             <h3>2.3 Sampling from the UNet</h3>
+
+            While the results start to take shape by Epoch 5, at Epoch 10 the images still have many faults. Since it is an unconditional model,
+            the chosen digit is simply a function of where in noise space we sample from, and if our input is in 'between' two digits, an average of 
+            the digits will be the output
+
+            <div class="gallery" style="width: 100%;">
+                <div class="gallery-item">
+                    <img src="./images/time_epoch1.png" alt="noising inputs">
+                    <p>Epoch 1</p>
+                </div>
+                 <div class="gallery-item">
+                    <img src="./images/time_epoch5.png" alt="noising inputs">
+                    <p>Epoch 5</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/time_epoch10.png" alt="noising inputs">
+                    <p>Epoch 10</p>
+                </div>
+            </div>
+        
             <h3>2.4 Adding Class-Conditioning to UNet</h3>
             <h3>2.5 Training the UNet</h3>
             <h3>2.6 Sampling from the UNet</h3>
