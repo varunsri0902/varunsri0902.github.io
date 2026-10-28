@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>CS180/280A Portfolio - Project 2</title>
+    <link rel="stylesheet" href="./../style.css">
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=default'></script>
+</head>
+
+<body>
+    <header>
+        <h1>Project 2</h1>
+    </header>
+
+    <main>
+        <section>
+            <h1>Part A: Image Warping and Mosaicing</h1>
+            <h2>1. Shoot the Pictures</h2>
+
+            <h3>Oxford Street Panoramic</h3>
+            <div class="gallery" style="width: 100%">
+                <div class="gallery-item">
+                    <img src="./images/oxford_1.jpg" alt="left">
+                    <p>Oxford St | Image 1</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/oxford_2.jpg" alt="right">
+                    <p>Oxford St | Image 2</p>
+                </div>
+            </div>
+
+            <h3>University Street Panorama</h3>
+            <div class="gallery" style="width: 100%">
+                <div class="gallery-item">
+                    <img src="./images/university_1.jpg" alt="training inputs">
+                    <p>University St | Image 1</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/university_2.jpg" alt="training inputs">
+                    <p>University St | Image 2</p>
+                </div>
+            </div>
+
+            <h2>2. Recover Homographies</h2>
+
+            <h3>Oxford Street Panoramic</h3>
+            <div class="gallery" style="width: 100%">
+                <div class="gallery-item">
+                    <img src="./images/oxford_set_points.jpg" alt="training inputs">
+                    <p></p>
+                </div>
+            </div>
+
+            <pre><code class="language-python">
+                Recovered Homography Matrix H:
+                    [[   1.909108    0.043419 -469.294808]
+                    [   0.360743    1.600796 -175.314222]
+                    [   0.001161    0.000092    1.      ]]
+            </code></pre>
+
+            <h3>University Street Panorama</h3>
+            <div class="gallery" style="width: 100%">
+                <div class="gallery-item">
+                    <img src="./images/university_set_points.jpg" alt="training inputs">
+                    <p></p>
+                </div>
+            </div>
+
+            
+            <pre><code class="language-python">
+                H = 
+            </code></pre>
+
+            <h2>3. Image Warping</h2>
+
+            <div class="gallery" style="width: 100%">
+                <div class="gallery-item">
+                    <img src="./images/rectification_painting.jpg" alt="training inputs">
+                    <p>Painting Rectification</p>
+                </div>
+            </div>
+
+            <div class="gallery" style="width: 100%">
+                <div class="gallery-item">
+                    <img src="./images/mosaic_Oxford_overwrite.jpg" alt="training inputs">
+                    <p>Oxford St Rectification</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="./images/mosaic_University_overwrite.jpg" alt="training inputs">
+                    <p>University St Rectification</p>
+                </div>
+            </div>
+
+            <h2>4. Blending the Image into Mosaics</h2>
+            <div class="gallery" style="width: 80%">
+                <div class="gallery-item">
+                    <img src="./images/mosaic_Oxford.jpg" alt="training inputs">
+                    <p>Oxford St Blended Mosaic</p>
+                </div>
+            </div>
+
+            <div class="gallery" style="width: 80%">
+                <div class="gallery-item">
+                    <img src="./images/mosaic_University.jpg" alt="training inputs">
+                    <p>Oxford St Blended Mosaic</p>
+                </div>
+            </div>
+
+        </section>
+      
+    </main>
+</body>
+
+</html>
