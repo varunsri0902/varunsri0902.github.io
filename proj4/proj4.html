@@ -17,6 +17,10 @@
             <h1>Part A: Image Warping and Mosaicing</h1>
             <h2>1. Shoot the Pictures</h2>
 
+            I took photos of two sets of panoramas. In each set, the camera was held in the same position, but rotated, ensuring that the center of projection
+            did not change. This allows us to compute the perspective projection (homography) between the two images. I varied the amount of overlap across the 
+            two sets to see its effects on the final mosaic.
+
             <h3>Oxford Street Panoramic</h3>
             <div class="gallery" style="width: 100%">
                 <div class="gallery-item">
@@ -43,6 +47,26 @@
 
             <h2>2. Recover Homographies</h2>
 
+            Using the provided tool from a previous semester, I selected matching points between the two images across both panoramic pairs. These selections
+            are visualized below. The transformation from some point \( (x, y) \) in image 1 to \( (u, v) \) in image 2 can be described as 
+
+            \[ \begin{bmatrix} 
+                h_{11} & h_{12} & h_{13} \\
+                h_{21} & h_{22} & h_{23} \\
+                h_{31} & h_{32} & h_{33} \\
+               \end{bmatrix} 
+               
+               \begin{bmatrix} x \\ y \\ 1 \end{bmatrix} = \begin{bmatrix} wu \\ wv \\ w \end{bmatrix}
+            \]
+            
+            From this matrix, we can reduce it to a system of linear equations to eliminate the scaling factor \( w \). In addition, we fix \( h_{33} \) to 1, 
+            giving us:
+
+            \[  \begin{bmatrix} x & y & 1 & 0 & 0 & 0 & -ux & -uy  \\ 0 & 0 & 0 & x & y & 1 & -vx & -vy \end{bmatrix} 
+                \begin{bmatrix} h11 \\  h12 \\  h13 \\ h21 \\  h22 \\  h23 \\  h31 \\  h32  \end{bmatrix} 
+                = \begin{bmatrix} u \\ v \end{bmatrix} 
+            \]
+
             <h3>Oxford Street Panoramic</h3>
             <div class="gallery" style="width: 100%">
                 <div class="gallery-item">
@@ -51,12 +75,13 @@
                 </div>
             </div>
 
-            <pre><code class="language-python">
-                Recovered Homography Matrix H:
-                    [[   1.909108    0.043419 -469.294808]
-                    [   0.360743    1.600796 -175.314222]
-                    [   0.001161    0.000092    1.      ]]
-            </code></pre>
+            Recovered Homograph Matrix: 
+            \[ \begin{bmatrix} 
+                1.909108 & 0.043419 & -469.294808 \\
+                0.360743 & 1.600796 & -175.314222\\
+                0.001161 & 0.000092 & 1 \\
+               \end{bmatrix} 
+            \]
 
             <h3>University Street Panorama</h3>
             <div class="gallery" style="width: 100%">
@@ -65,18 +90,33 @@
                     <p></p>
                 </div>
             </div>
-
-            
-            <pre><code class="language-python">
-                H = 
-            </code></pre>
+            Recovered Homograph Matrix: 
+            \[ \begin{bmatrix} 
+                3.247259 & -0.267275 & -1208.080178 \\
+                01.072296 & 2.647616 & -602.213374 \\
+                0.003079 & -0.000095  & 1 \\
+               \end{bmatrix} 
+            \]
 
             <h2>3. Image Warping</h2>
+
+            The first step in validating the homography derivation was to use a test image. Using an angled picture of a painting, I projected it onto a rectangle,
+            matching the paintings corners to the coordinates [(0, 0), (1, 0), (1, 1), (0, 1)]. The result of this homography is shown below, both cropped and uncropped.
+            We can see that billinear interpolation looks smoother as compared to nearest neighbors.
 
             <div class="gallery" style="width: 100%">
                 <div class="gallery-item">
                     <img src="./images/rectification_painting.jpg" alt="training inputs">
                     <p>Painting Rectification</p>
+                </div>
+            </div>
+
+            Once this was validated on the painting, I used another picture I took, along with the mosaics to further validate the accuracy of the homography.
+            
+            <div class="gallery" style="width: 100%">
+                <div class="gallery-item">
+                    <img src="./images/rectification_building.jpg" alt="training inputs">
+                    <p>Building Rectification</p>
                 </div>
             </div>
 
@@ -90,8 +130,21 @@
                     <p>University St Rectification</p>
                 </div>
             </div>
+            
 
             <h2>4. Blending the Image into Mosaics</h2>
+
+            With the rectification complete, the final step to stich these images together was to blend them together. To do this, I used weighted averages, with
+            the weight being the distance from the image border. This meant that center pixels had a higher weight, while pixels near the edge had a lower weight.
+            This mask was also transformed by the homography, and then for each pixel on the final image, a normalized weighted average was used to compute the final
+            pixel value. 
+            
+            <br><br>
+            The source images, their unblended rectification, and their blended products are shown below. The UT Tower mosaic found online has a clear seam due
+            to the lighting differences. However, the two panoramas I took did not have these issues, so I did not pursue a Laplacian pyramid blending scheme. 
+            Another interesting observation was how the percentage overlap between the two mosaics I took affects the dimensions of the final stich. As overlap 
+            decreases, the projection becomes more 'steep', resulting in one of the images being skewed and stretched much as compared to the Oxford street mosaic.
+
             <div class="gallery" style="width: 80%">
                 <div class="gallery-item">
                     <img src="./images/mosaic_Oxford.jpg" alt="training inputs">
@@ -102,7 +155,14 @@
             <div class="gallery" style="width: 80%">
                 <div class="gallery-item">
                     <img src="./images/mosaic_University.jpg" alt="training inputs">
-                    <p>Oxford St Blended Mosaic</p>
+                    <p>University St Blended Mosaic</p>
+                </div>
+            </div>
+
+            <div class="gallery" style="width: 80%">
+                <div class="gallery-item">
+                    <img src="./images/mosaic_UT Tower.jpg" alt="training inputs">
+                    <p>UT Tower (online image)</p>
                 </div>
             </div>
 
